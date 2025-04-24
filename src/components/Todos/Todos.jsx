@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useReducer, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useReducer,
+  useRef,
+  useState,
+} from "react";
 import TodoItem from "./TodoItem";
 import TimeEditModal from "./TimeEditModal";
 
@@ -48,6 +54,7 @@ const Todos = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const inputRef = useRef();
 
   useEffect(() => {
     localStorage.setItem("todos", JSON.stringify(todos));
@@ -56,7 +63,7 @@ const Todos = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 3000);
+    }, 5000);
 
     return () => {
       clearTimeout(timer);
@@ -77,9 +84,9 @@ const Todos = () => {
     });
   }, []);
 
-  const handleAddNewTodo = (event) => {
-    if (event.code === "Enter") {
-      const title = event.target.value.trim();
+  const handleAddNewTodo = (event, action = "") => {
+    if (event.code === "Enter" || action === "ADD-TODO") {
+      const title = inputRef.current.value.trim();
       if (title) {
         setTempTitle(title);
         setModalTodo({
@@ -88,7 +95,7 @@ const Todos = () => {
         });
         setIsModalOpen(true);
         setIsEditing(false);
-        event.target.value = "";
+        inputRef.current.value = "";
       } else {
         alert("Please enter the task details.");
         return;
@@ -146,31 +153,44 @@ const Todos = () => {
         <h1 className="text-2xl sm:text-3xl font-bold text-blue-600 mb-1">
           Todo App
         </h1>
-        <p className="text-gray-500 mb-1">
+        <p className="text-gray-500 mb-6">
           Get things done, one task at a time
         </p>
-        <div className="relative mb-6">
-          <input
-            type="text"
-            onKeyDown={handleAddNewTodo}
-            placeholder="What needs to be done?"
-            className="w-full p-4 pl-12 pr-4 rounded-xl border border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
-          />
-          <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-              />
-            </svg>
-          </span>
+
+        <div className="flex flex-col sm:flex-row gap-4 items-center justify-center mb-6">
+          <div className="relative w-full sm:w-auto sm:flex-1">
+            <input
+              type="text"
+              ref={inputRef}
+              onKeyDown={handleAddNewTodo}
+              placeholder="What needs to be done?"
+              className="w-full p-4 pl-12 pr-16 rounded-xl border border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+            />
+            <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                />
+              </svg>
+            </span>
+          </div>
+
+          <button
+            onClick={(event) => handleAddNewTodo(event, "ADD-TODO")}
+            className="relative inline-block px-6 py-4 overflow-hidden font-medium text-white uppercase tracking-wider text-sm transition-all duration-300 rounded-xl group"
+          >
+            <span className="relative z-10">Add</span>
+            <span className="absolute inset-0 bg-cyan-500 rounded-xl z-0"></span>
+            <span className="absolute inset-0 w-0 bg-cyan-600 rounded-xl transition-all duration-300 group-hover:w-full z-0"></span>
+          </button>
         </div>
       </header>
 
