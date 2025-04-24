@@ -157,13 +157,13 @@ const Todos = () => {
           Get things done, one task at a time
         </p>
 
-        <div className="flex flex-col sm:flex-row gap-4 items-center justify-center mb-6">
+        <div className="flex sm:flex-row gap-4 items-center justify-between mb-6">
           <div className="relative w-full sm:w-auto sm:flex-1">
             <input
               type="text"
               ref={inputRef}
               onKeyDown={handleAddNewTodo}
-              placeholder="What needs to be done?"
+              placeholder="What to do?"
               className="w-full p-4 pl-12 pr-16 rounded-xl border border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
             />
             <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
