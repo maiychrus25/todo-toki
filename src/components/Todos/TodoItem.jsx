@@ -1,27 +1,50 @@
 import React, { useEffect, useState } from "react";
 import { calculateTimePercentage } from "../../services/calculateTimePercentage";
 import ProgressCircle from "./ProgressCircle";
+import Skeleton from "react-loading-skeleton";
+import "react-loading-skeleton/dist/skeleton.css";
 
-const TodoItem = ({ todo, onToggle, onDelete, onEdit }) => {
+const TodoItem = ({ todo, onToggle, onDelete, onEdit, isLoading }) => {
   const [timePercentage, setTimePercentage] = useState(
-    calculateTimePercentage(todo.startTime, todo.endTime)
+    todo && todo.startTime
+      ? calculateTimePercentage(todo.startTime, todo.endTime)
+      : 0
   );
 
   useEffect(() => {
+    if (!todo || !todo.startTime) return;
+
     const interval = setInterval(() => {
       setTimePercentage(calculateTimePercentage(todo.startTime, todo.endTime));
     }, 60000);
+
     return () => {
       clearInterval(interval);
     };
-  }, [todo.startTime, todo.endTime]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [todo?.startTime, todo?.endTime]);
 
-  // const formatTime = (dateTime) => {
-  //   return new Date(dateTime).toLocaleTimeString([], {
-  //     hour: "2-digit",
-  //     minute: "2-digit",
-  //   });
-  // };
+  if (isLoading || !todo) {
+    return (
+      <div className="flex items-center justify-between p-4 mb-3 bg-white rounded-lg shadow-sm">
+        <div className="flex-1">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <Skeleton circle width={20} height={20} />
+              <Skeleton width={150} height={20} />
+            </div>
+            <div className="flex space-x-2">
+              <Skeleton circle width={32} height={32} />
+              <Skeleton circle width={32} height={32} />
+              <div className="mr-4 mt-[-4px]">
+                <Skeleton circle width={40} height={40} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -132,15 +155,6 @@ const TodoItem = ({ todo, onToggle, onDelete, onEdit }) => {
               />
             </div>
           </div>
-          {/* Hiển thị thời gian
-          <div className="mt-2 ml-8 text-xs text-gray-500 flex items-center justify-between gap-1">
-            <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded mr-2">
-              🕒 {formatTime(todo.startTime)}
-            </span>
-            <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded">
-              🏁 {formatTime(todo.endTime)}
-            </span>
-          </div> */}
         </div>
       </div>
     </div>

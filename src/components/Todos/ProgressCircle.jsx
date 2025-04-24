@@ -1,4 +1,12 @@
-const ProgressCircle = ({ percentage, onClick }) => {
+import React from "react";
+import Skeleton from "react-loading-skeleton";
+import "react-loading-skeleton/dist/skeleton.css";
+
+const ProgressCircle = ({ percentage, onClick, isLoading }) => {
+  if (isLoading) {
+    return <Skeleton circle width={40} height={40} />;
+  }
+
   const radius = 16;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
@@ -26,7 +34,7 @@ const ProgressCircle = ({ percentage, onClick }) => {
           strokeDashoffset={strokeDashoffset}
           strokeLinecap="round"
           fill="none"
-          transform="rotate(-90 20 20)" // Xoay -90° để bắt đầu từ trên cùng
+          transform="rotate(-90 20 20)"
         />
       </svg>
       <span className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-xs font-bold text-gray-700">

@@ -10,17 +10,7 @@ const ACTION_TYPES = {
   UPDATE: "UPDATE",
 };
 
-const initTodos = JSON.parse(localStorage.getItem("todos")) || [
-  {
-    id: 1,
-    title: "Learn Piano",
-    isCompleted: false,
-    isImportant: true,
-    isDeleted: false,
-    startTime: "2025-04-22T09:00",
-    endTime: "2025-04-26T09:00",
-  },
-];
+const initTodos = JSON.parse(localStorage.getItem("todos")) || [];
 
 const reducer = (state, action) => {
   switch (action.type) {
@@ -54,13 +44,24 @@ const reducer = (state, action) => {
 const Todos = () => {
   const [todos, dispatch] = useReducer(reducer, initTodos);
   const [tempTitle, setTempTitle] = useState("");
-  const [modalTodo, setModalTodo] = useState(null); // todo đang chỉnh sửa (hoặc thêm)
+  const [modalTodo, setModalTodo] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState(false); // phân biệt đang add hay edit
+  const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     localStorage.setItem("todos", JSON.stringify(todos));
   }, [todos]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 5000);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, []);
 
   const handleToggle = useCallback((id, field) => {
     dispatch({
@@ -134,9 +135,10 @@ const Todos = () => {
     setIsModalOpen(true);
   };
 
-  useEffect(() => {
-    localStorage.setItem("todos", JSON.stringify(todos));
-  }, [todos]);
+  const activeTodos = todos.filter((todo) => !todo.isDeleted);
+  const deletedCount = todos.length - activeTodos.length;
+  const importantCount = activeTodos.filter((todo) => todo.isImportant).length;
+  const completedCount = activeTodos.filter((todo) => todo.isCompleted).length;
 
   return (
     <div className="max-w-md mx-auto p-4 sm:p-6 bg-gray-50 min-h-screen shadow-md">
@@ -173,7 +175,12 @@ const Todos = () => {
       </header>
 
       <div className="mb-6">
-        {todos.filter((todo) => !todo.isDeleted).length === 0 ? (
+        {isLoading ? (
+          // Hiển thị skeleton loading trong 3 giây
+          Array(5)
+            .fill()
+            .map((_, index) => <TodoItem key={`skeleton-${index}`} isLoading />)
+        ) : activeTodos.length === 0 ? (
           <div className="text-center py-8 text-gray-400">
             <svg
               className="w-12 h-12 mx-auto mb-3"
@@ -191,50 +198,38 @@ const Todos = () => {
             <p>No tasks yet. Add one above!</p>
           </div>
         ) : (
-          todos
-            .filter((todo) => !todo.isDeleted)
-            .map((todo) => (
-              <TodoItem
-                key={todo.id}
-                todo={todo}
-                onToggle={handleToggle}
-                onDelete={handleDelete}
-                onEdit={() => handleEditClick(todo)}
-              />
-            ))
+          activeTodos.map((todo) => (
+            <TodoItem
+              key={todo.id}
+              todo={todo}
+              onToggle={handleToggle}
+              onDelete={handleDelete}
+              onEdit={() => handleEditClick(todo)}
+              isLoading={isLoading}
+            />
+          ))
         )}
       </div>
 
       <footer className="pt-4 border-t border-gray-200 text-sm text-gray-500">
         <div className="flex justify-between mb-1">
           <span>
-            Total:{" "}
-            <strong>{todos.filter((todo) => !todo.isDeleted).length}</strong>
+            Total: <strong>{activeTodos.length}</strong>
           </span>
           <span>
-            Deleted: <strong>{todos.filter((t) => t.isDeleted).length}</strong>
+            Deleted: <strong>{deletedCount}</strong>
           </span>
         </div>
         <div className="flex justify-between">
           <span>
-            Important:{" "}
-            <strong>
-              {
-                todos.filter((todo) => !todo.isDeleted && todo.isImportant)
-                  .length
-              }
-            </strong>
+            Important: <strong>{importantCount}</strong>
           </span>
           <span>
-            Completed:{" "}
-            <strong>
-              {todos.filter((t) => t.isCompleted && !t.isDeleted).length}
-            </strong>
+            Completed: <strong>{completedCount}</strong>
           </span>
         </div>
       </footer>
 
-      {/* Modal dùng chung cho cả add & edit */}
       {modalTodo && (
         <TimeEditModal
           isOpen={isModalOpen}
